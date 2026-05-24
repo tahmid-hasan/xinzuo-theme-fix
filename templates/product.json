@@ -93,6 +93,7 @@
             },
             "detail_content_custom": {
               "type": "_product-detail-content",
+              "disabled": true,
               "settings": {
                 "detail_content": "<p>Forged in Yangjiang, China — the knife-making capital of the world. Premium steel, precision ground to a 15° edge, and backed by our Australian lifetime warranty.</p>"
               },

@@ -1,12 +1,3 @@
-/*
- * ------------------------------------------------------------
- * IMPORTANT: The contents of this file are auto-generated.
- *
- * This file may be updated by the Shopify admin theme editor
- * or related systems. Please exercise caution as any changes
- * made to this file may be overwritten.
- * ------------------------------------------------------------
- */
 {
   "sections": {
     "main": {
@@ -93,6 +84,7 @@
             },
             "detail_content_custom": {
               "type": "_product-detail-content",
+              "disabled": true,
               "settings": {
                 "detail_content": "<p>Ultra-premium Japanese ZDP189 steel with extreme hardness for exceptional edge retention and professional-level performance.</p>"
               },
