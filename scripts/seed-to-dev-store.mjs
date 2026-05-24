@@ -116,6 +116,16 @@ const seedPath = path.join(process.cwd(), 'seed.json');
 if (!existsSync(seedPath)) { console.error('No seed.json in CWD'); process.exit(1); }
 const seed = JSON.parse(readFileSync(seedPath, 'utf-8'));
 
+// Map page handles to theme template suffixes (page.{suffix}.json).
+const PAGE_TEMPLATE_SUFFIX = {
+  'bundle-builder': 'bundle-builder',
+  'series-comparison': 'series-comparison',
+  'reviews': 'reviews',
+  'contact': 'contact',
+  'best-sellers': 'best-sellers',
+  'bundle-sale': 'bundles',
+};
+
 // Slim seed: keep the FIRST 40 products BUT make sure the ones referenced by name in
 // templates/index.json (Featured Products, "Build Your Own Knife Set", etc.) are included.
 // Otherwise those sections render empty on the homepage.
@@ -356,7 +366,10 @@ if (WRITE) {
 console.log(`\n=== Pages (${seed.pages.length}) ===`);
 if (WRITE) {
   const res = await pool(seed.pages, async (p) => {
-    await api('POST', 'pages.json', { page: { title: p.title, handle: p.handle, body_html: p.body_html, published: true } });
+    const suffix = PAGE_TEMPLATE_SUFFIX[p.handle];
+    const page = { title: p.title, handle: p.handle, body_html: p.body_html, published: true };
+    if (suffix) page.template_suffix = suffix;
+    await api('POST', 'pages.json', { page });
   });
   created.pages = res.ok;
   console.log(`  ${res.ok} created, ${res.fail} failed`);
