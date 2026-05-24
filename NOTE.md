@@ -1,25 +1,19 @@
 ## What I picked
 
-Restoring the storefront **data layer** so broken merchant-facing pages work again — starting with the **Bundle Builder** at `/pages/bundle-builder`, which was completely dead (default page template, no products in custom collections).
+I went after the **Bundle Builder** first (`/pages/bundle-builder`). On the live store it was basically a blank page — just the title, no tabs, no products. That felt like the biggest thing broken for a customer actually trying to buy.
 
 ## Why it's the highest-impact thing here
 
-The Bundle Builder is a core conversion surface: tabbed series picker, tiered bundle discounts, sticky cart. Without it, customers cannot build a set at all. The same seed gap also broke **Series Comparison**, left **custom collection pages empty** (e.g. Mo Series), and cascaded into **wrong PDP breadcrumbs** because products were never linked to their series collections. Fixing the seed restores multiple pages from one root cause.
+The Bundle Builder is where someone builds a knife set and gets a bundle discount. Without it, that whole flow is gone. When I dug in, the Liquid and JS were already there — the problem was what gets created when you seed the dev store. Pages weren't getting the right template, and custom collections like Mo Series had no products in them. Same root issue was also killing Series Comparison, empty collection pages, and messy breadcrumbs on product pages.
 
 ## What I did
 
-- **Seed — page templates:** Assign `template_suffix` when creating pages so Bundle Builder, Series Comparison, Reviews, Contact, Best Sellers, and Bundles use their custom JSON templates.
-- **Seed — collects:** After products and collections are created, assign membership via the Collects API using `series:*` and `knife-type:*` tags (metafields are not seeded).
-- **Theme — breadcrumbs:** Classify knives from product tags instead of `custom.isknife` metafield so PDP shows `KNIVES` not `ACCESSORIES`.
-- **Theme — recommendations:** Filter the current product out of “You Might Also Like”.
-- **Theme — PDP description:** Disable duplicate `detail_content_custom` blurb where the accordion already renders the full description.
-- **Theme — reviews page:** Replace pruned Judge.me app block with the native `best-reviews` section (static cards from the homepage).
+I fixed the seed script in two steps: pages now get the correct `template_suffix` (so Bundle Builder and Series Comparison use their real templates), and products get added to custom collections through the Collects API based on their tags.
 
-Re-seeded the dev store and pushed the updated theme to `qyalma-sandbox.myshopify.com`.
+On the theme side I cleaned up a few things that only showed up because the seed data was incomplete — breadcrumbs now treat knives as knives (tags instead of a metafield that never got seeded), recommendations no longer suggest the product you're already on, I removed a duplicate description on the PDP, and the reviews page uses the built-in best-reviews section since Judge.me gets stripped on push anyway.
+
+Re-seeded the store and pushed the theme to `qyalma-sandbox.myshopify.com`.
 
 ## What I'd do next
 
-- **Performance:** Lighthouse pass on homepage and PDP (image preload, defer non-critical JS, carousel lazy-load).
-- **Metafields in seed:** Restore `custom.isknife` and spec metafields so theme logic does not rely solely on tags.
-- **Judge.me:** Install the app on the dev store or keep the native reviews fallback and style it for the reviews page layout.
-- **Full catalog:** Run `--full` seed (237 products) once collection assignment is proven at slim scale.
+I'd run Lighthouse on the homepage and a PDP, seed metafields properly so the theme doesn't need tag workarounds, and either wire up Judge.me or polish the native reviews page. Full catalog seed if there's time.
