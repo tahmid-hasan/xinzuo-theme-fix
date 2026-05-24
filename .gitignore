@@ -4,3 +4,10 @@
 node_modules/
 .shopify/
 *.log
+
+# Editor and agent artifacts
+.cursor/
+.cursorrules
+.agents/
+AGENTS.md
+*.plan.md
