@@ -57,6 +57,12 @@
   elsif product.tags contains 'sharpening'
     assign product_category = 'Sharpening Tool'
   endif
+
+  assign is_knife = false
+  assign tag_blob = product.tags | join: ','
+  if tag_blob contains 'knife-type:'
+    assign is_knife = true
+  endif
 -%}
 
 <div class="product-title-custom" {{ block.shopify_attributes }}>
@@ -70,7 +76,7 @@
         </span>
         <span aria-hidden="true">&gt;</span>
         <span itemprop="itemListElement" itemscope itemtype="https://schema.org/ListItem">
-          {% if product.metafields.custom.isknife == true %}
+          {% if is_knife %}
             <a href="{{ routes.collections_url }}/knives" itemprop="item"><span itemprop="name">KNIVES</span></a>
           {% else %}
             <a href="{{ routes.collections_url }}/accessories" itemprop="item"><span itemprop="name">ACCESSORIES</span></a>

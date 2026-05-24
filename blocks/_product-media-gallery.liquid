@@ -288,12 +288,18 @@
       endif
     endfor
   endif
+
+  assign is_knife = false
+  assign tag_blob = product.tags | join: ','
+  if tag_blob contains 'knife-type:'
+    assign is_knife = true
+  endif
 -%}
 <div class="main-product-links">
   <span>
     <a href="/">Home</a>
     <span>&gt;</span>
-    {% if product.metafields.custom.isknife == true %}
+    {% if is_knife %}
       <a href="/collections/knives">KNIVES</a>
     {% else %}
       <a href="/collections/accessories">ACCESSORIES</a>
@@ -316,7 +322,7 @@
 </div>
 <div class="link-products">
   {% comment %} Only show circular menu for knives {% endcomment %}
-  {% if product.metafields.custom.isknife == true %}
+  {% if is_knife %}
     {% for collection in product.collections %}
       {% if collection.title contains "Series" %}
         {% comment %} Extract the series identifier from current product title {% endcomment %}
