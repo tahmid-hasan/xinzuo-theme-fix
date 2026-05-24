@@ -78,7 +78,7 @@
             assign products = null
           endif
         else
-          assign products = recommendations.products
+          assign products = recommendations.products | reject: 'id', closest.product.id
         endif
       %}
       {% capture list_items %}
