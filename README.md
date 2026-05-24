@@ -90,6 +90,16 @@ Submit your repo + Loom + `NOTE.md` summary on the [hiring portal](https://apply
 
 ---
 
+## Submission (TYICDI task)
+
+**Loom walkthrough:** Add your 3-minute screen recording URL here before submitting.
+
+**Store:** https://qyalma-sandbox.myshopify.com (password: `qyalma`)
+
+See [`NOTE.md`](NOTE.md) for what was fixed and why.
+
+---
+
 ## Script options
 
 ```bash
