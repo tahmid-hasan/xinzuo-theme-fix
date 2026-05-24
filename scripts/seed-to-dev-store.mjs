@@ -126,6 +126,30 @@ const PAGE_TEMPLATE_SUFFIX = {
   'bundle-sale': 'bundles',
 };
 
+// Map product series:* tags to custom collection handles for collects API.
+const SERIES_TAG_TO_COLLECTION = {
+  'series:mo': 'xinzuo-mo-series-knives',
+  'series:lan': 'xinzuo-lan-series-knives',
+  'series:supreme': 'hezhen-supreme-series-knives',
+  'series:retro': 'hezhen-retro-series-knives',
+  'series:yi': 'b27-yi-series',
+  'series:master': 'b30-master-series',
+  'series:ji': 'x08-ji-series',
+  'series:pin': 'x020-pin-series',
+};
+
+function collectionHandlesForTags(tags) {
+  const tagList = typeof tags === 'string' ? tags.split(',').map((t) => t.trim()).filter(Boolean) : [];
+  const handles = new Set();
+  let isKnife = false;
+  for (const tag of tagList) {
+    if (tag.startsWith('series:') && SERIES_TAG_TO_COLLECTION[tag]) handles.add(SERIES_TAG_TO_COLLECTION[tag]);
+    if (tag.startsWith('knife-type:')) isKnife = true;
+  }
+  handles.add(isKnife ? 'knives' : 'accessories');
+  return [...handles];
+}
+
 // Slim seed: keep the FIRST 40 products BUT make sure the ones referenced by name in
 // templates/index.json (Featured Products, "Build Your Own Knife Set", etc.) are included.
 // Otherwise those sections render empty on the homepage.
@@ -231,7 +255,7 @@ if (WRITE && WIPE) {
   console.log(`  deleted ${allFileIds.length} files`);
 }
 
-const created = { media: 0, products: 0, collections: 0, pages: 0, blogs: 0, articles: 0 };
+const created = { media: 0, products: 0, collections: 0, pages: 0, blogs: 0, articles: 0, collects: 0 };
 
 // --- MEDIA: upload theme images to dev-store Files (must happen BEFORE theme push) ---
 // The theme JSON references images by shopify://shop_images/{filename}. Those refs
@@ -374,6 +398,34 @@ if (WRITE) {
   created.pages = res.ok;
   console.log(`  ${res.ok} created, ${res.fail} failed`);
 } else created.pages = seed.pages.length;
+
+// --- COLLECTS: assign products to custom collections ---
+console.log('\n=== Collects (custom collection membership) ===');
+if (WRITE) {
+  const storeProducts = await paginate('products.json?fields=id,tags');
+  const customCollections = await paginate('custom_collections.json?fields=id,handle');
+  const collectionIdByHandle = new Map(customCollections.map((c) => [c.handle, c.id]));
+  const collectJobs = [];
+  for (const product of storeProducts) {
+    for (const handle of collectionHandlesForTags(product.tags)) {
+      const collectionId = collectionIdByHandle.get(handle);
+      if (collectionId) collectJobs.push({ product_id: product.id, collection_id: collectionId });
+    }
+  }
+  console.log(`  ${collectJobs.length} collect assignments planned`);
+  const res = await pool(collectJobs, async (collect) => {
+    try {
+      await api('POST', 'collects.json', { collect });
+    } catch (e) {
+      // Skip duplicates when re-running without wipe
+      if (!String(e.message).includes('422')) throw e;
+    }
+  });
+  created.collects = res.ok;
+  console.log(`  ${res.ok} created, ${res.fail} failed`);
+} else {
+  created.collects = productsToCreate.length;
+}
 
 // --- BLOGS + ARTICLES ---
 console.log(`\n=== Blogs + Articles (${articlesToCreate.length}) ===`);
